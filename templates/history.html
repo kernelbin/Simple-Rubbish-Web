@@ -1,0 +1,88 @@
+{%extends "base.html"%}
+
+{%block title%}
+扔垃圾历史
+{%endblock%}
+{%block body%}
+<script>
+
+    var vue;
+    $(document).ready(() => {
+        vue = new Vue({
+            el: "#history", data: {
+                data: [], total_pages: 0, done: false, current_page: 1, types: {
+                    dry: "干垃圾", wet: "湿垃圾", harmful: "有害垃圾", recyclable: "可回收垃圾"
+                }
+            }, delimiters: ["{[", "]}"], methods: {
+                changePage(target) {
+                    if (target == -1) return;
+                    $.post("/api/get_history", { page: target }).done(ret => {
+                        ret = JSON.parse(ret);
+                        if (ret.code) {
+                            showErrorModal(ret.message);
+                            return;
+                        }
+                        vue.total_pages = ret.total_pages;
+                        vue.data = ret.data;
+                        vue.current_page = target;
+                        vue.done = true;
+
+
+                    })
+                }
+            }, computed: {
+                pageMenu() {
+                    const arr = new Array();
+                    for (var i = 1; i <= this.total_pages; i++) arr.push(i);
+                    if (arr.indexOf(this.current_page) > 5) {
+                        arr.splice(1, arr.indexOf(this.current_page) - 4);
+                        arr.splice(1, 1, -1);
+                    }
+                    if (arr.indexOf(this.current_page) + 5 <= arr.length) {
+                        arr.splice(arr.indexOf(this.current_page) + 5, arr.length - 2 - (arr.indexOf(this.current_page) + 5) + 1);
+                        arr.splice(-2, 1, -1);
+                    }
+                    return arr;
+                }
+            }
+        });
+        vue.changePage(1);
+
+    });
+</script>
+<div id="history" v-if="done">
+    <div class="ui header">
+        <h1>垃圾历史</h1>
+    </div>
+    <div class="ui segment stacked">
+        <table class="ui very basic table">
+            <thead>
+                <tr>
+                    <th class="center aligned" style="max-width: 80px;width:80px;">ID</th>
+                    <th class="center aligned">时间</th>
+                    <th class="center aligned">垃圾桶</th>
+                    <th class="center aligned">垃圾类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item in data">
+                    <td class="center aligned">{[item.rubbish_id]}</td>
+                    <td class="center aligned">{[item.time]}</td>
+                    <td class="center aligned">{[item.rubbish_bin]}</td>
+                    <td class="center aligned">{[types[item.rubbish_type]]}</td>
+
+                </tr>
+            </tbody>
+        </table>
+
+    </div>
+    <div class="ui center aligned container" style="margin-top: 30px;">
+        <div class="ui pagination menu" v-if="pageMenu.find(x=>x!=-1)">
+            <a class="item" v-for="item in pageMenu"
+                :class="{disabled:item==-1||item==current_page,active:item==current_page}"
+                v-on:click="changePage(item)">{[
+                item==-1?"...":item]}</a>
+        </div>
+    </div>
+</div>
+{%endblock%}

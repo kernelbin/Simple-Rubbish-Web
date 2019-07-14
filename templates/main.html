@@ -5,9 +5,78 @@
 {%endblock%}
 {%block body%}
 <script>
-    const client = io.connect("http://127.0.0.1:8080");
-    client.on("owo", () => console.log("Received"))
-    client.emit("pwp", "嘤嘤嘤qwq")
+    // const client = io.connect("http://127.0.0.1:8080");
+    // client.on("owo", () => console.log("Received"))
+    // client.emit("pwp", "嘤嘤嘤qwq")
+    var vue;
+    $(document).ready(() => {
+        vue = new Vue({
+            el: "#main", data: {
+                is_login: false, user_id: -1, is_admin: false, username: "", rubbish_type: "dry", types: {
+                    dry: "干垃圾", wet: "湿垃圾", harmful: "有害垃圾", recyclable: "可回收垃圾"
+                }
+            }, delimiters: ["{[", "]}"], methods: {
+                logout: function () {
+                    $.post("/api/logout").done((ret) => {
+                        ret = JSON.parse(ret);
+                        if (ret.code) {
+                            showErrorModal(ret.message);
+                            return;
+                        }
+                        window.location.reload();
+                    });
+                }
+            }
+        });
+        $.post("/api/get_login_state").done((ret) => {
+            ret = JSON.parse(ret);
+            vue.is_login = ret.is_login, vue.user_id = ret.user_id, vue.is_admin = ret.is_admin, vue.username = ret.username;
+            vue.$nextTick(() => {
+                $(".dropdown").dropdown();
+            })
+        })
+    });
 </script>
+<div id="main">
+    <div class="ui header">
+        <h1>主页</h1>
+    </div>
+    <div class="ui segment stacked" style="max-width: 500px;">
+        <div class="ui vertical menu" v-if="!is_login">
+            <a class="ui item" href="/login">
+                登录
+            </a>
+            <a class="ui item" href="/register">
+                注册
+            </a>
+        </div>
+        <div v-else>
+            <div class="ui two column grid">
+                <div class="column">用户ID</div>
+                <div class="column">{[user_id]}</div>
+                <div class="column">用户名</div>
+                <div class="column">{[username]}</div>
+                <div class="column">是否为管理</div>
+                <div class="column">{[is_admin]}</div>
+                <div class="column"><a @click="logout" href="">登出</a></div>
+                <div class="column"><a href="/history">查看历史记录</a></div>
 
+            </div>
+        </div>
+        <div class="ui divider">
+
+        </div>
+        <div class="ui header">
+            <h2>生成二维码</h2>
+        </div>
+        <div class="ui buttons">
+            <button v-for="v,k in types" class="ui button" v-bind:class="{active:rubbish_type==k}"
+                @click="rubbish_type=k">{[v]}</button>
+        </div>
+        <img class="ui img" :src="'/api/generate_qrcode/'+rubbish_type">
+        将此二维码使用垃圾桶扫描即可记录。
+        
+    </div>
+
+</div>
 {%endblock%}

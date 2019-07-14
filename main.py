@@ -16,12 +16,14 @@ app = Flask("SimpleRubbish-Web")
 app.config["SQLALCHEMY_DATABASE_URI"] = config.DATABASE_URI
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 app.config["DEBUG"] = config.DEBUG
+app.secret_key = config.SESSION_KEY
 basedir = os.path.dirname(__file__)
 db = SQLAlchemy(app)
-CSRFProtect(app)
+csrf=CSRFProtect(app)
 
 socket = SocketIO(app)
 # api = Blueprint("api","api")
 # app.register_blueprint(api, url_prefix="/api")
-from routes import *
+
 from models import *
+from routes import *

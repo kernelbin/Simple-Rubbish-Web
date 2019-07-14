@@ -1,6 +1,6 @@
 from .view import *
-from .test import *
-from .login import *
+from .user import *
+from .api import *
 from main import app, config
 
 

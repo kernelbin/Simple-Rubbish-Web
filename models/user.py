@@ -11,10 +11,14 @@ class User(db.Model):
     # 密码
     password = db.Column(db.String(64), nullable=False)
     # 重置密码所需密钥
-    reset_token = db.Column(db.String(256), nullable=False)
+    reset_token = db.Column(db.String(256), nullable=True)
+    # 邮箱
+    email = db.Column(db.String(256), nullable=False)
+    is_admin = db.Column(db.Boolean, default=False, nullable=False)
     @staticmethod
     def by_id(id):
         return db.session.query(User).filter(User.id == id).one()
+
     def as_dict(self):
         ret = dict(filter(lambda x: not x[0].startswith(
             "_"), self.__dict__.items()))

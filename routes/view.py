@@ -20,3 +20,8 @@ def view_register():
 @app.route("/reset_password")
 def view_reset_password():
     return render_template("reset_password.html")
+
+
+@app.route("/history")
+def view_history():
+    return render_template("history.html")

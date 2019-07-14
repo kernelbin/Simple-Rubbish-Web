@@ -6,3 +6,4 @@ flask-script
 flask-wtf
 mysql-connector-python
 flask-script
+qrcode

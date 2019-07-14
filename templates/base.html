@@ -21,9 +21,6 @@
     <title>
         {%block title%}{%endblock%}
     </title>
-</head>
-
-<body style="background-color: rgb(236, 233, 233)">
     <script>
         const md5WithSalt = function (str) {
             return md5(md5(str) + "{{SALT}}");
@@ -32,7 +29,19 @@
             $("#global-error-header").text(title)
             $("#global-error-text").text(text);
             $("#global-error-model").modal("show");
-        };</script>
+        };
+        $.ajaxSetup({
+            beforeSend: function (xhr, settings) {
+                xhr.setRequestHeader("X-CSRFtoken", "{{csrf_token()}}")
+            }, error: function (xhr, status, err) {
+                showErrorModal(xhr.responseText, xhr.status + " " + err);
+            }
+        });
+    </script>
+</head>
+
+<body style="background-color: rgb(236, 233, 233)">
+
     <div class="ui main container" style="margin-top:70px;margin-bottom:70px">
         {%block body%}{%endblock%}
     </div>
